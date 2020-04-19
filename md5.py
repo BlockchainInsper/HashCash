@@ -1,6 +1,7 @@
 import bitarray as bt
 import struct
 from enum import Enum
+import math
 
 class MD5Buffer(Enum):
     A = 0x67452301
@@ -31,10 +32,23 @@ class Md5:
         self.extended_mesage = self.byte_padded_mesage
         self.extended_mesage.extend(lenght_b)
 
-        
+    def calculate_f(self, x, y, z):
+        return ( x & y ) | ( ~x & z )
 
+    def calculate_g(self, x, y, z):
+        return ( x & z ) | ( y & ~z )
 
+    def calculate_h(self, x, y, z):
+        return x ^ y ^ z
 
+    def calculate_i(self, x, y, z):
+        return y ^ ( x | ~z )
+
+    def left_rotate(self, x, c):
+        return ( x << c ) | ( x >> (32 - c))
+
+    def modular_add(self, a, b):
+        return ( a + b ) % pow(2, 32)
 
 def main():
     md5 = Md5("oi")
