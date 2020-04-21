@@ -81,6 +81,7 @@ class Md5:
     
     def block(self, block):
         words = self.chunkIt(block, 16)
+        words = [int.from_bytes(word.tobytes(), byteorder="little") for word in words]
         a = MD5Buffer.A
         b = MD5Buffer.B
         c = MD5Buffer.C
@@ -97,13 +98,29 @@ class Md5:
                 g = (3*i + 5) % 16
             elif 48 <= i <= 63:
                 F = self.calculate_i(c, b, d)
+                g = (7*i) % 16
 
-            F += a + self.k[i] + words[g]
+
+            F = self.modular_add(F, words[g])
+            F = self.modular_add(F, self.k[i])
+            F = self.modular_add(F, a)
+            F = self.left_rotate(F, self.s[i])
+            F = self.modular_add(F, b)
+
             a = d
             d = c
             c = b
-            b = b + self.left_rotate(F, self.s[i])
-            return a, b, c, d
+            b = F
+
+        return a, b, c, d
+
+    def format_result(self, a, b, c, d):
+        A = struct.unpack("<I", struct.pack(">I", a))[0]
+        B = struct.unpack("<I", struct.pack(">I", b))[0]
+        C = struct.unpack("<I", struct.pack(">I", c))[0]
+        D = struct.unpack("<I", struct.pack(">I", d))[0]
+        return f"{format(A, '08x')}{format(B, '08x')}{format(C, '08x')}{format(D, '08x')}"
+        
 
     def hash(self, mesage):
         treated_mesage = self.extend(self.padding(mesage))
@@ -117,13 +134,13 @@ class Md5:
 
         for b in blocks:
             a, b, c, d = self.block(b)
-            A += a
-            B += b
-            C += c
-            D += d
+            A = self.modular_add(a,A)
+            B = self.modular_add(b,B)
+            C = self.modular_add(c,C)
+            D = self.modular_add(d,D)
 
-        result = A + B + C + D
-        return result
+        return self.format_result(A, B, C, D)
+        
 
 
 
@@ -136,7 +153,7 @@ class Md5:
 
 def main():
     md5 = Md5()
-    print(md5.hash("oi"))
+    print(md5.hash("adwdaa"))
 
 
 if __name__ == "__main__":
