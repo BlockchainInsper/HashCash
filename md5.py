@@ -85,24 +85,21 @@ class Md5:
             if 0 <= i <= 15:
                 F = self.calculate_f(b, c, d)
                 g = i
-                s = [7, 12, 17, 22]
             elif 16 <= i <= 31:
                 F = self.calculate_f(d, b, c)
                 g = (5*i + 1) % 16
-                s = [5, 9, 14, 20]
             elif 32 <= i <= 47:
                 F = self.calculate_h(b, c, d)
                 g = (3*i + 5) % 16
-                s = [4, 11, 16, 23]
             elif 48 <= i <= 63:
                 F = self.calculate_i(c, b, d)
                 g = (7*i) % 16
-                s = [6, 10, 15, 21]
+
 
             F = self.modular_add(F, words[g])
             F = self.modular_add(F, self.k[i])
             F = self.modular_add(F, a)
-            F = self.left_rotate(F, s[i%4])
+            F = self.left_rotate(F, self.s[i])
             F = self.modular_add(F, b)
 
             a = d
