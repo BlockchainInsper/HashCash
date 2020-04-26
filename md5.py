@@ -2,12 +2,7 @@ import bitarray as bt
 import struct
 from enum import Enum
 import math
-
-class MD5Buffer():
-    A = 0x67452301
-    B = 0xEFCDAB89
-    C = 0x98BADCFE
-    D = 0x10325476
+import MD5Buffer as buffer
 
 class Md5:
     def __init__(self):
@@ -77,10 +72,10 @@ class Md5:
     def block(self, block):
         words = self.chunkIt(block, 16)
         words = [int.from_bytes(word.tobytes(), byteorder="little") for word in words]
-        a = MD5Buffer.A
-        b = MD5Buffer.B
-        c = MD5Buffer.C
-        d = MD5Buffer.D
+        a = buffer.MD5Buffer.A
+        b = buffer.MD5Buffer.B
+        c = buffer.MD5Buffer.C
+        d = buffer.MD5Buffer.D
         for i in range(64):
             if 0 <= i <= 15:
                 F = self.calculate_f(b, c, d)
@@ -122,10 +117,10 @@ class Md5:
         n_blocks = len(treated_mesage)/512
         blocks = self.chunkIt(treated_mesage, n_blocks)
 
-        A = MD5Buffer.A
-        B = MD5Buffer.B
-        C = MD5Buffer.C
-        D = MD5Buffer.D
+        A = buffer.MD5Buffer.A
+        B = buffer.MD5Buffer.B
+        C = buffer.MD5Buffer.C
+        D = buffer.MD5Buffer.D
 
         for b in blocks:
             a, b, c, d = self.block(b)
@@ -137,7 +132,7 @@ class Md5:
         return self.format_result(A, B, C, D)
         
 
-def md5_hash(string):
+def md5_hash(string: str):
     md5 = Md5()
     return md5.hash(string)
 
