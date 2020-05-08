@@ -14,9 +14,8 @@ class Md5:
                   23, 4, 11, 16, 23, 6, 10, 15, 21,
                   6, 10, 15, 21, 6, 10, 15, 21, 6, 10,
                   15, 21]
-        self.k = []
-        for i in range(64):
-            self.k.append(math.floor(232*abs(math.sin(i+1))))
+        
+        self.k = [math.floor(pow(2, 32) * abs(math.sin(i + 1))) for i in range(64)]
         
     
     def chunkIt(self, seq, num):
@@ -31,25 +30,31 @@ class Md5:
         return out
 
     def padding(self, mesage):
-        byte_padded_mesage = bt.bitarray(endian="big")
-        byte_padded_mesage.frombytes(mesage.encode('utf-8'))
-        byte_padded_mesage.append(1)
+        # Convert the string to a bit array.
+        bit_array = bt.bitarray(endian="big")
+        bit_array.frombytes(mesage.encode("utf-8"))
 
-        while (byte_padded_mesage.length() % 512 != 448):
-            byte_padded_mesage.append(0)
-        byte_padded_mesage = bt.bitarray(byte_padded_mesage, endian="little")
+        # Pad the string with a 1 bit and as many 0 bits required such that
+        # the length of the bit array becomes congruent to 448 modulo 512.
+        # Note that padding is always performed, even if the string's bit
+        # length is already conguent to 448 modulo 512, which leads to a
+        # new 512-bit message block.
+        bit_array.append(1)
+        while bit_array.length() % 512 != 448:
+            bit_array.append(0)
 
-        return byte_padded_mesage
+        # For the remainder of the MD5 algorithm, all values are in
+        # little endian, so transform the bit array to little endian.
+        return bt.bitarray(bit_array, endian="little")
 
-    def extend(self, byte_padded_mesage):
-        extended_mesage = bt.bitarray(endian="little")
-        lenght_b = bt.bitarray(endian="little")
-        lenght_b.frombytes(struct.pack("<Q", byte_padded_mesage.length()))
-        b = len(lenght_b)
-        extended_mesage = byte_padded_mesage
-        extended_mesage.extend(lenght_b)
-
-        return extended_mesage
+    def extend(self, byte_padded_message, message):
+        length = (len(message) * 8) % pow(2, 64)
+        length_bit_array = bt.bitarray(endian="little")
+        length_bit_array.frombytes(struct.pack("<Q", length))
+        
+        result = byte_padded_message.copy()
+        result.extend(length_bit_array)
+        return result
 
     def calculate_f(self, x, y, z):
         return ( x & y ) | ( ~x & z )
@@ -80,21 +85,25 @@ class Md5:
             if 0 <= i <= 15:
                 F = self.calculate_f(b, c, d)
                 g = i
+                self.s = [7, 12, 17, 22]
             elif 16 <= i <= 31:
                 F = self.calculate_f(d, b, c)
                 g = (5*i + 1) % 16
+                self.s = [5, 9, 14, 20]
             elif 32 <= i <= 47:
                 F = self.calculate_h(b, c, d)
                 g = (3*i + 5) % 16
+                self.s = [4, 11, 16, 23]
             elif 48 <= i <= 63:
-                F = self.calculate_i(c, b, d)
+                F = self.calculate_i(b, c, d)
                 g = (7*i) % 16
+                self.s = [6, 10, 15, 21]
 
 
             F = self.modular_add(F, words[g])
             F = self.modular_add(F, self.k[i])
             F = self.modular_add(F, a)
-            F = self.left_rotate(F, self.s[i])
+            F = self.left_rotate(F, self.s[i%4])
             F = self.modular_add(F, b)
 
             a = d
@@ -113,8 +122,8 @@ class Md5:
         
 
     def hash(self, mesage):
-        treated_mesage = self.extend(self.padding(mesage))
-        n_blocks = len(treated_mesage)/512
+        treated_mesage = self.extend(self.padding(mesage), mesage)
+        n_blocks = len(treated_mesage)//512
         blocks = self.chunkIt(treated_mesage, n_blocks)
 
         A = buffer.MD5Buffer.A

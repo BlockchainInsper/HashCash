@@ -3,7 +3,7 @@ import binascii
 import Sender as sd
 import Email as em
 
-mined_email = sd.mine("Tesjfsejfse", 15)
+mined_email = sd.mine("Tesjfsejfse", 5)
 
 nounce, hashe = mined_email
 
