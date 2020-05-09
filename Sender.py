@@ -22,7 +22,6 @@ def mine(mesage, target):
         nounce += 1
         block = mesage + str(nounce)
         md5_hash = Md5.md5_hash(block)
-
-
+        
     return nounce, md5_hash
 

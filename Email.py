@@ -1,8 +1,7 @@
-import datetime
 
 
 class Email():
-    def __init__(self, timestamp: datetime, mesage: str, target: int):
+    def __init__(self, datetime, mesage, target):
         self.Timestamp = datetime
         self.Mesage = mesage
         self.Target = target
