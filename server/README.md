@@ -11,7 +11,7 @@ Se não tiver pode instalar executando o comando nesta pasta:
 pip install -r requirements.txt
 ```
 
-Para inicializar o servidor simpleste execute o comando:
+Para inicializar o servidor simplesmente execute o comando:
 
 ``` python
 python3 app.py
