@@ -8,7 +8,7 @@ Para inicializar o servidor verifique que você tem o Python na versão >= 3.6.9
 Se não tiver pode instalar executando o comando nesta pasta:
 
 ``` bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 Para inicializar o servidor simplesmente execute o comando:
